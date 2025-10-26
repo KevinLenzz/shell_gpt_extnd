@@ -14,15 +14,15 @@ FUNCTIONS_PATH = SHELL_GPT_CONFIG_FOLDER / "functions"
 CHAT_CACHE_PATH = Path(gettempdir()) / "chat_cache"
 CACHE_PATH = Path(gettempdir()) / "cache"
 
-# TODO: Refactor ENV variables with SGPT_ prefix.
+#默认API改为DeepSeek
 DEFAULT_CONFIG = {
-    # TODO: Refactor it to CHAT_STORAGE_PATH.
+    "API_BASE_URL": os.getenv("API_BASE_URL", "https://api.deepseek.com"),
+    "DEFAULT_MODEL": os.getenv("DEFAULT_MODEL", "deepseek-chat"),
     "CHAT_CACHE_PATH": os.getenv("CHAT_CACHE_PATH", str(CHAT_CACHE_PATH)),
     "CACHE_PATH": os.getenv("CACHE_PATH", str(CACHE_PATH)),
     "CHAT_CACHE_LENGTH": int(os.getenv("CHAT_CACHE_LENGTH", "100")),
     "CACHE_LENGTH": int(os.getenv("CHAT_CACHE_LENGTH", "100")),
     "REQUEST_TIMEOUT": int(os.getenv("REQUEST_TIMEOUT", "60")),
-    "DEFAULT_MODEL": os.getenv("DEFAULT_MODEL", "gpt-4o"),
     "DEFAULT_COLOR": os.getenv("DEFAULT_COLOR", "magenta"),
     "ROLE_STORAGE_PATH": os.getenv("ROLE_STORAGE_PATH", str(ROLE_STORAGE_PATH)),
     "DEFAULT_EXECUTE_SHELL_CMD": os.getenv("DEFAULT_EXECUTE_SHELL_CMD", "false"),
@@ -31,15 +31,12 @@ DEFAULT_CONFIG = {
     "OPENAI_FUNCTIONS_PATH": os.getenv("OPENAI_FUNCTIONS_PATH", str(FUNCTIONS_PATH)),
     "OPENAI_USE_FUNCTIONS": os.getenv("OPENAI_USE_FUNCTIONS", "true"),
     "SHOW_FUNCTIONS_OUTPUT": os.getenv("SHOW_FUNCTIONS_OUTPUT", "false"),
-    "API_BASE_URL": os.getenv("API_BASE_URL", "default"),
     "PRETTIFY_MARKDOWN": os.getenv("PRETTIFY_MARKDOWN", "true"),
     "USE_LITELLM": os.getenv("USE_LITELLM", "false"),
     "SHELL_INTERACTION": os.getenv("SHELL_INTERACTION ", "true"),
     "OS_NAME": os.getenv("OS_NAME", "auto"),
     "SHELL_NAME": os.getenv("SHELL_NAME", "auto"),
-    # New features might add their own config variables here.
 }
-
 
 class Config(dict):  # type: ignore
     def __init__(self, config_path: Path, **defaults: Any):

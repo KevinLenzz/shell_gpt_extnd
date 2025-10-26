@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "shell_gpt"
-description = "A command-line productivity tool powered by large language models, will help you accomplish your tasks faster and more efficiently."
-keywords = ["shell", "gpt", "openai", "ollama", "cli", "productivity", "cheet-sheet"]
+name = "shell_gpt_extnd"
+description = "汉化并拓展shell_gpt"
+keywords = ["shell", "gpt", "openai", "ollama", "cli", "productivity", "cheet-sheet","deepseek"]
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
-authors = [{ name = "Farkhod Sadykov", email = "farkhod@sadykov.dev" }]
+authors = [{ name = "Farkhod Sadykov", email = "farkhod@sadykov.dev" }, { name = "Kevin Lenzz", email = "KevinLenz@Outlook.com" }]
 dynamic = ["version"]
 classifiers = [
     "Operating System :: OS Independent",
@@ -56,8 +56,8 @@ dev = [
 sgpt = "sgpt:cli"
 
 [project.urls]
-homepage = "https://github.com/ther1d/shell_gpt"
-repository = "https://github.com/ther1d/shell_gpt"
+homepage = "https://github.com/KevinLenzz/shell_gpt_extnd"
+repository = "https://github.com/KevinLenzz/shell_gpt_extnd"
 documentation = "https://github.com/TheR1D/shell_gpt/blob/main/README.md"
 
 [tool.hatch.version]

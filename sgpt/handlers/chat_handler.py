@@ -152,7 +152,7 @@ class ChatHandler(Handler):
             chat_role_name = self.role.get_role_name(self.initial_message(self.chat_id))
             if not chat_role_name:
                 raise BadArgumentUsage(
-                    f'Could not determine chat role of "{self.chat_id}"'
+                    f'不能确定 "{self.chat_id}" 的 chat role'
                 )
             if self.role.name == DefaultRoles.DEFAULT.value:
                 # If user didn't pass chat mode, we will use the one that was used to initiate the chat.
@@ -160,8 +160,8 @@ class ChatHandler(Handler):
             else:
                 if not self.is_same_role:
                     raise BadArgumentUsage(
-                        f'Cant change chat role to "{self.role.name}" '
-                        f'since it was initiated as "{chat_role_name}" chat.'
+                        f'无法更改 chat role 为 "{self.role.name}" '
+                        f'因为它已被启动为 "{chat_role_name}" chat.'
                     )
 
     def make_messages(self, prompt: str) -> List[Dict[str, str]]:

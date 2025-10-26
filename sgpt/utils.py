@@ -29,7 +29,7 @@ def get_edited_prompt() -> str:
         output = file.read()
     os.remove(file_path)
     if not output:
-        raise BadParameter("Couldn't get valid PROMPT from $EDITOR")
+        raise BadParameter("无法从 $EDITOR 得到有效的 PROMPT")
     return output
 
 
@@ -82,9 +82,9 @@ def install_shell_integration(*_args: Any) -> None:
         with open(os.path.expanduser("~/.bashrc"), "a", encoding="utf-8") as file:
             file.write(bash_integration)
     else:
-        raise UsageError("ShellGPT integrations only available for ZSH and Bash.")
+        raise UsageError("ShellGPT 仅能与 ZSH 或 Bash进行集成。")
 
-    typer.echo("Done! Restart your shell to apply changes.")
+    typer.echo("完成！重启你的终端以应用更改。")
 
 
 @option_callback

@@ -13,35 +13,34 @@ from distro import name as distro_name
 from .config import cfg
 from .utils import option_callback
 
-SHELL_ROLE = """Provide only {shell} commands for {os} without any description.
-If there is a lack of details, provide most logical solution.
-Ensure the output is a valid shell command.
-If multiple steps required try to combine them together using &&.
-Provide only plain text without Markdown formatting.
-Do not provide markdown formatting such as ```.
-"""
+SHELL_ROLE = """仅提供适用于{os}的{shell}命令，不附带任何说明。
+如果缺乏详细信息，请提供最合理的解决方案。
+确保输出的是有效的shell命令。
+如果需要执行多个步骤，尝试使用&&将它们组合在一起。
+仅提供纯文本，不进行Markdown格式化。
+不要使用诸如```这样的Markdown格式化。"""
 
-DESCRIBE_SHELL_ROLE = """Provide a terse, single sentence description of the given shell command.
-Describe each argument and option of the command.
-Provide short responses in about 80 words.
-APPLY MARKDOWN formatting when possible."""
+DESCRIBE_SHELL_ROLE = """用简洁的一句话描述给定的shell命令。
+描述该命令的每个参数和选项。
+请用大约80个字给出简短回答。
+尽可能应用Markdown格式。（APPLY MARKDOWN）"""
 # Note that output for all roles containing "APPLY MARKDOWN" will be formatted as Markdown.
 
-CODE_ROLE = """Provide only code as output without any description.
-Provide only code in plain text format without Markdown formatting.
-Do not include symbols such as ``` or ```python.
-If there is a lack of details, provide most logical solution.
-You are not allowed to ask for more details.
-For example if the prompt is "Hello world Python", you should return "print('Hello world')"."""
+CODE_ROLE = """只提供代码作为输出，不提供任何描述。
+只提供纯文本格式的代码，不提供Markdown格式。
+不要包含诸如```或```python之类的符号。
+如果缺少细节，请提供最合乎逻辑的解决方案。
+不允许您询问更多细节。
+例如，如果提示是“Hello world Python”，则应返回“print('Hello world')”。"""
 
-DEFAULT_ROLE = """You are programming and system administration assistant.
-You are managing {os} operating system with {shell} shell.
-Provide short responses in about 100 words, unless you are specifically asked for more details.
-If you need to store any data, assume it will be stored in the conversation.
-APPLY MARKDOWN formatting when possible."""
+DEFAULT_ROLE = """您是编程和系统管理助理。
+您正在使用｛shell｝shell管理｛os｝操作系统。
+除非有人特别要求你提供更多细节，否则请提供约100字的简短回复。
+如果你需要存储任何数据，认定它将存储在对话中。
+如果可能，请应用MARKDOWN格式。(APPLY MARKDOWN)"""
 # Note that output for all roles containing "APPLY MARKDOWN" will be formatted as Markdown.
 
-ROLE_TEMPLATE = "You are {name}\n{role}"
+ROLE_TEMPLATE = "你是{name}\n{role}"
 
 
 class SystemRole:
@@ -145,7 +144,7 @@ class SystemRole:
     def _save(self) -> None:
         if self._exists:
             typer.confirm(
-                f'Role "{self.name}" already exists, overwrite it?',
+                f'Role "{self.name}" 已经存在, 重写它?',
                 abort=True,
             )
 
@@ -155,7 +154,7 @@ class SystemRole:
     def delete(self) -> None:
         if self._exists:
             typer.confirm(
-                f'Role "{self.name}" exist, delete it?',
+                f'Role "{self.name}" 存在, 删除它?',
                 abort=True,
             )
         self._file_path.unlink()

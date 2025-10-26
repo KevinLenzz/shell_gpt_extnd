@@ -55,7 +55,7 @@ class Config(dict):  # type: ignore
             config_path.parent.mkdir(parents=True, exist_ok=True)
             # Don't write API key to config file if it is in the environment.
             if not defaults.get("OPENAI_API_KEY") and not os.getenv("OPENAI_API_KEY"):
-                __api_key = getpass(prompt="Please enter your OpenAI API key: ")
+                __api_key = getpass(prompt="请输入与OpenAI API兼容的API的key: ")
                 defaults["OPENAI_API_KEY"] = __api_key
             super().__init__(**defaults)
             self._write()
@@ -82,7 +82,7 @@ class Config(dict):  # type: ignore
         # Prioritize environment variables over config file.
         value = os.getenv(key) or super().get(key)
         if not value:
-            raise UsageError(f"Missing config key: {key}")
+            raise UsageError(f"配置的key无法使用: {key}")
         return value
 
 

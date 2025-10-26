@@ -36,11 +36,11 @@ class Function:
 
         if not isinstance(module.Function, ABCMeta):
             raise TypeError(
-                f"Function {module_name} must be a subclass of pydantic.BaseModel"
+                f"Function {module_name} 必须是 pydantic.BaseModel 的一个子类"
             )
         if not hasattr(module.Function, "execute"):
             raise TypeError(
-                f"Function {module_name} must have a 'execute' static method"
+                f"Function {module_name} 必须有一个 'execute' 静态方法"
             )
 
         return module
@@ -55,7 +55,7 @@ def get_function(name: str) -> Callable[..., Any]:
     for function in functions:
         if function.name == name:
             return function.execute
-    raise ValueError(f"Function {name} not found")
+    raise ValueError(f"Function {name} 未找到")
 
 
 def get_openai_schemas() -> List[Dict[str, Any]]:

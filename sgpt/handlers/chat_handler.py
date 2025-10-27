@@ -152,7 +152,7 @@ class ChatHandler(Handler):
             chat_role_name = self.role.get_role_name(self.initial_message(self.chat_id))
             if not chat_role_name:
                 raise BadArgumentUsage(
-                    f'不能确定 "{self.chat_id}" 的 chat role'
+                    f'不能识别 "{self.chat_id}" 这个 chat role'
                 )
             if self.role.name == DefaultRoles.DEFAULT.value:
                 # If user didn't pass chat mode, we will use the one that was used to initiate the chat.

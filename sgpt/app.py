@@ -178,10 +178,13 @@ def main(
         # In this case, "hello" will be used as a init prompt, and
         # "This is input" will be used as "interactive" input to the REPL.
         # This is useful to test REPL with some initial context.
-        for line in sys.stdin:
-            if "__sgpt__eof__" in line:
-                break
-            stdin += line
+        try:
+            for line in sys.stdin:
+                if "__sgpt__eof__" in line:
+                    break
+                stdin += line
+        except EOFError:
+            pass #使用源码进行测试
         prompt = f"{stdin}\n\n{prompt}" if prompt else stdin
         try:
             # Switch to stdin for interactive input.

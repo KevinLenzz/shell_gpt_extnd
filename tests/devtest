@@ -1,0 +1,2 @@
+#!/bin/sh
+python -m pytest _integration.py -v -s

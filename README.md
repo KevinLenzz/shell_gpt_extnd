@@ -11,3 +11,18 @@ sgpt并不会一直有进程在后台挂载，而是每次使用后都自动关�
 在项目根目录下执行run文件（文件类型：shell脚本）来替代sgpt发布版本的sgpt [选项、参数]：
 ```shell
 . run [选项、参数]
+```
+
+已把tests目录下的_integration_test.sh文件汉化，目前仅测试了deepseek。
+
+测试之前先在tests目录下运行以下命令
+```shell
+. prepare
+```
+它会将本用户的sgpt配置中使用函数改为false（之后再运行一遍这个脚本可以改回来）
+
+tests目录下运行
+```shell
+. devtest
+```
+测试接入的中文api是否功能齐全

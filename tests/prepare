@@ -1,0 +1,41 @@
+#!/bin/bash
+
+CONFIG_FILE="$HOME/.config/shell_gpt/.sgptrc"
+
+# 检查配置文件是否存在
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "❌ 错误：配置文件 $CONFIG_FILE 不存在！"
+    exit 1
+fi
+
+echo "🔍 正在检查当前配置..."
+CURRENT_VALUE=$(grep "OPENAI_USE_FUNCTIONS" "$CONFIG_FILE" | cut -d'=' -f2)
+
+if [ -z "$CURRENT_VALUE" ]; then
+    echo "❌ 未找到 OPENAI_USE_FUNCTIONS 配置项"
+    exit 1
+fi
+
+echo "当前配置: OPENAI_USE_FUNCTIONS=$CURRENT_VALUE"
+
+# 根据当前值决定新值
+if [ "$CURRENT_VALUE" = "true" ]; then
+    NEW_VALUE="false"
+else
+    NEW_VALUE="true"
+fi
+
+echo "🔄 执行配置修改: $CURRENT_VALUE → $NEW_VALUE"
+
+# 执行替换操作
+if sed -i.bak "s/^OPENAI_USE_FUNCTIONS=$CURRENT_VALUE$/OPENAI_USE_FUNCTIONS=$NEW_VALUE/" "$CONFIG_FILE"; then
+    rm -f "${CONFIG_FILE}.bak"
+    echo "✅ 配置修改成功！"
+
+    # 验证修改结果
+    UPDATED_VALUE=$(grep "OPENAI_USE_FUNCTIONS" "$CONFIG_FILE" | cut -d'=' -f2)
+    echo "更新后配置: OPENAI_USE_FUNCTIONS=$UPDATED_VALUE"
+else
+    echo "❌ 配置修改失败！"
+    exit 1
+fi

@@ -26,3 +26,12 @@ tests目录下运行
 . devtest
 ```
 测试接入的中文api是否功能齐全
+
+清理shell_gpt配置：
+```shell
+rm -rf ~/.config/shell_gpt
+```
+清理shell_gpt缓存：
+```shell
+rm -rf ~/.cache/shell_gpt
+```

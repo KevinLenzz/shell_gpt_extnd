@@ -47,36 +47,38 @@ class ReplHandler(ChatHandler):
         )
         typer.secho(info_message, fg="yellow")
         full_completion=""
-        if init_prompt:
-            rich_print(Rule(title="Input", style="bold purple"))
-            typer.echo(init_prompt)
-            rich_print(Rule(style="bold purple"))
-            init_lines=init_prompt.split("\n")
-            i=0
-            row=len(init_lines)
-            while i<row:
-                prompt=init_lines[i]
-                print(">>> "+prompt)
-                i+=1
-                if prompt=='"""':
-                    prompt,i=self._testmode_get_multiline_input(init_lines,i)
-                if prompt=="exit()":
-                    raise typer.Exit()
-                if self.role.name==DefaultRoles.SHELL.value and prompt=="e":
-                    typer.echo()
-                    run_command(full_completion)
-                    typer.echo()
-                    rich_print(Rule(style="bold magenta"))
-                elif self.role.name==DefaultRoles.SHELL.value and prompt=="d":
-                    DefaultHandler(
-                        DefaultRoles.DESCRIBE_SHELL.get_role(),self.markdown
-                    ).handle(prompt=full_completion,**kwargs)
-                else:
-                    full_completion=super().handle(prompt=prompt,**kwargs)
-            init_prompt=""
         while True:
             # Infinite loop until user exits with Ctrl+C.
-            prompt=typer.prompt(">>>",prompt_suffix=" ")
+            try:
+                prompt=typer.prompt(">>>",prompt_suffix=" ")
+            except Abort:
+                #没有用户输入时直接使用标准输入
+                rich_print(Rule(title="Input",style="bold purple"))
+                typer.echo(init_prompt)
+                rich_print(Rule(style="bold purple"))
+                init_lines=init_prompt.split("\n")
+                i=0
+                row=len(init_lines)
+                while i<row:
+                    prompt=init_lines[i]
+                    print(">>> "+prompt)
+                    i+=1
+                    if prompt=='"""':
+                        prompt,i=self._testmode_get_multiline_input(init_lines,i)
+                    if prompt=="exit()":
+                        raise typer.Exit()
+                    if self.role.name==DefaultRoles.SHELL.value and prompt=="e":
+                        typer.echo()
+                        run_command(full_completion)
+                        typer.echo()
+                        rich_print(Rule(style="bold magenta"))
+                    elif self.role.name==DefaultRoles.SHELL.value and prompt=="d":
+                        DefaultHandler(
+                            DefaultRoles.DESCRIBE_SHELL.get_role(),self.markdown
+                        ).handle(prompt=full_completion,**kwargs)
+                    else:
+                        full_completion=super().handle(prompt=prompt,**kwargs)
+                break;
             if prompt=='"""':
                 prompt=self._get_multiline_input()
             if prompt=="exit()":

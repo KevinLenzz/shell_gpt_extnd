@@ -127,9 +127,13 @@ class ChatHandler(Handler):
     @option_callback
     def list_ids(cls, value: str) -> None:
         # Prints all existing chat IDs to the console.
+        found=False
         for chat_id in cls.chat_session.list():
+            if not found:
+                found=True
             typer.echo(chat_id)
-
+        if not found:
+            typer.echo("没有找到任何Chat")
     @classmethod
     def show_messages(cls, chat_id: str, markdown: bool) -> None:
         color = cfg.get("DEFAULT_COLOR")

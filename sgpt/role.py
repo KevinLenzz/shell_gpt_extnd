@@ -1,4 +1,5 @@
 import json
+import os
 import platform
 from enum import Enum
 from os import getenv, pathsep
@@ -9,11 +10,12 @@ from typing import Dict, Optional
 import typer
 from click import BadArgumentUsage
 from distro import name as distro_name
+from pygments.lexers import shell
 
 from .config import cfg
 from .utils import option_callback
 
-SHELL_ROLE = """仅提供适用于{os}的{shell}命令，不附带任何说明。
+SHELL_ROLE = f"""仅提供适用于{os.name}的{shell}命令，不附带任何说明。
 如果缺乏详细信息，请提供最合理的解决方案。
 确保输出的是有效的shell命令。
 如果需要执行多个步骤，尝试使用&&将它们组合在一起。
@@ -33,8 +35,8 @@ CODE_ROLE = """只提供代码作为输出，不提供任何描述。
 不允许您询问更多细节。
 例如，如果提示是“Hello world Python”，则应返回“print('Hello world')”。"""
 
-DEFAULT_ROLE = """你是编程和系统管理助理。
-您正在使用｛shell｝shell管理｛os｝操作系统。
+DEFAULT_ROLE = f"""你是编程和系统管理助理。
+您正在使用{shell}shell管理{os.name}操作系统。
 除非有人特别要求你提供更多细节，否则请提供约100字的简短回复。
 如果你需要存储任何数据，认定它将存储在对话中。
 如果可能，请应用MARKDOWN格式。(APPLY MARKDOWN)"""
@@ -92,9 +94,14 @@ class SystemRole:
             return
         # Get all files in the folder.
         files = cls.storage.glob("*")
+        found=False
         # Sort files by last modification time in ascending order.
         for path in sorted(files, key=lambda f: f.stat().st_mtime):
+            if not found:
+                found=True
             typer.echo(path)
+        if not found:
+            typer.echo("没有找到任何角色")
 
     @classmethod
     @option_callback
@@ -157,7 +164,12 @@ class SystemRole:
                 f'Role "{self.name}" 存在, 删除它?',
                 abort=True,
             )
-        self._file_path.unlink()
+        try:
+            self._file_path.unlink()
+            typer.echo(f'Role "{self.name}" 删除成功')
+            raise typer.Exit
+        except PermissionError:
+            typer.secho("角色被占用，请等待释放",fg="red")
 
     def same_role(self, initial_message: str) -> bool:
         if not initial_message:

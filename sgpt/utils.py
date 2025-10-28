@@ -1,6 +1,7 @@
 import os
 import platform
 import shlex
+import subprocess
 from tempfile import NamedTemporaryFile
 from typing import Any, Callable
 
@@ -8,6 +9,7 @@ import typer
 from click import BadParameter, UsageError
 
 from sgpt.__version__ import __version__
+from sgpt.config import SHELL_GPT_CONFIG_PATH
 from sgpt.integration import bash_integration, zsh_integration
 
 
@@ -32,6 +34,42 @@ def get_edited_prompt() -> str:
         raise BadParameter("无法从 $EDITOR 得到有效的 PROMPT")
     return output
 
+def extract_provider(file_path: str) -> str:
+    """
+    Directly use the content of text file to provide prompt
+
+    :return: String prompt.
+    """
+    if not os.path.isfile(file_path):
+        raise BadParameter(f"文件路径 '{file_path}' 不是有效文件")
+    if not os.access(file_path,os.R_OK):
+        raise BadParameter(f"文件 '{file_path}' 不可读")
+    # Read file when editor is closed.
+    with open(file_path, "r", encoding="utf-8") as file:
+        output = file.read()
+    if not output:
+        raise BadParameter("无法从 $EDITOR 得到有效的 PROMPT")
+    return output
+
+def open_provider(file_path: str) -> str:
+    """
+    Opens the text file by editor to provide prompt
+
+    :return: String prompt.
+    """
+    if not os.path.isfile(file_path):
+        raise BadParameter(f"文件路径 '{file_path}' 不是有效文件")
+    if not os.access(file_path,os.R_OK):
+        raise BadParameter(f"文件 '{file_path}' 不可读")
+    editor = os.environ.get("EDITOR", "vim")
+    # This will write text to file using $EDITOR.
+    os.system(f"{editor} {file_path}")
+    # Read file when editor is closed.
+    with open(file_path, "r", encoding="utf-8") as file:
+        output = file.read()
+    if not output:
+        raise BadParameter("无法从 $EDITOR 得到有效的 PROMPT")
+    return output
 
 def run_command(command: str) -> None:
     """
@@ -93,3 +131,54 @@ def get_sgpt_version(*_args: Any) -> None:
     Displays the current installed version of ShellGPT
     """
     typer.echo(f"ShellGPT {__version__}")
+
+
+def subprocess_exec_command(command:str) -> str:
+    """
+    Executes the previous command in the shell and analyze it.
+    """
+    result=subprocess.run(
+        command,
+        shell=True,
+        capture_output=True,
+        text=True
+    )
+    res=f"运行命令：{command}\n标准输出：{result.stdout}\n标准错误输出：{result.stderr}\n返回码：{result.returncode}"
+    return res
+
+@option_callback
+def edit_config(*_args: Any)->None:
+    """
+    Edit the config file
+    """
+    try:
+        os.system(f"{os.environ.get('EDITOR', 'vim')} {SHELL_GPT_CONFIG_PATH}")
+    except Exception as e:
+        typer.echo(f"无法打开配置文件：{e}")
+
+
+def set_file_immutable(file_path):
+    """
+    设置文件不可变属性（Linux/Unix系统）
+    """
+    try:
+        # 检查文件是否存在
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"文件 {file_path} 不存在")
+
+        # 设置不可变属性
+        subprocess.run(['sudo','chattr','+i',file_path],check=True,capture_output=True)
+    except subprocess.CalledProcessError as e:
+        print(f"设置文件不可变失败: {e}")
+    except FileNotFoundError as e:
+        print(f"文件不存在: {e}")
+
+
+def remove_file_immutable(file_path):
+    """
+    移除文件不可变属性
+    """
+    try:
+        subprocess.run(['sudo','chattr','-i',file_path],check=True,capture_output=True)
+    except subprocess.CalledProcessError as e:
+        print(f"移除文件不可变属性失败: {e}")

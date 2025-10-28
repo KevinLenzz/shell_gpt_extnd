@@ -9,9 +9,9 @@ from click import BadArgumentUsage
 from click.types import Choice
 from prompt_toolkit import PromptSession
 
-from sgpt.config import cfg
+from sgpt.config import cfg,ROLE_STORAGE_PATH,CHAT_CACHE_PATH
 from sgpt.function import get_openai_schemas
-from sgpt.handlers.chat_handler import ChatHandler
+from sgpt.handlers.chat_handler import ChatHandler,ChatSession
 from sgpt.handlers.default_handler import DefaultHandler
 from sgpt.handlers.repl_handler import ReplHandler
 from sgpt.llm_functions.init_functions import install_functions as inst_funcs
@@ -21,6 +21,10 @@ from sgpt.utils import (
     get_sgpt_version,
     install_shell_integration,
     run_command,
+    subprocess_exec_command,
+    open_provider,
+    extract_provider,
+    edit_config
 )
 
 
@@ -88,7 +92,7 @@ def main(
     ),
     editor: bool = typer.Option(
         False,
-        help="打开 $EDITOR 以供给 prompt",
+        help="打开"+os.environ.get("EDITOR", "vim")+"以供给 prompt",
         rich_help_panel="应用选项",
     ),
     cache: bool = typer.Option(
@@ -165,6 +169,47 @@ def main(
         hidden=True,  # Hiding since should be used only once.
         rich_help_panel="选项",
     ),
+    sub_exec: str= typer.Option(
+        None,
+"--sub-exec",
+        "-sx",
+        help="在子进程执行命令并让sgpt分析",
+        rich_help_panel="辅助选项",
+    ),
+    provide: str = typer.Option(
+        None,
+        help="使用现有文件提供prompt",
+        rich_help_panel="应用选项",
+    ),
+    edit_config: bool = typer.Option(
+        False,
+        "--edit-config",
+        help="编辑配置文件",
+        callback=edit_config,
+        rich_help_panel="选项",
+    ),
+    del_role: str = typer.Option(
+        None,
+        help="删除角色",
+        rich_help_panel="角色选项",
+    ),
+    del_role_a: bool = typer.Option(
+        False,
+        "--del-role-a",
+        help="删除所有角色",
+        rich_help_panel="角色选项",
+    ),
+    del_chat: str = typer.Option(
+        None,
+        help="删除Chat",
+        rich_help_panel="Chat选项",
+    ),
+    del_chat_a: bool = typer.Option(
+        False,
+"--del-chat-a",
+        help="删除所有Chat",
+        rich_help_panel="Chat选项",
+    ),
 ) -> None:
     stdin_passed = not sys.stdin.isatty()
 
@@ -195,6 +240,41 @@ def main(
         except OSError:
             # Non-interactive shell.
             pass
+    if sub_exec:
+        prompt = f"{subprocess_exec_command(sub_exec)}\n\n将标准输出（如果有）和标准错误输出（如果有）美化并输出，分析以上命令及其结果，如果有错误就指出并纠正\n\n{prompt}"
+
+    if del_role:
+        SystemRole.get(del_role).delete()
+    if del_role_a:
+        typer.confirm(
+            f'确定删除所有角色文件吗？',
+            abort=True,
+        )
+        for item in ROLE_STORAGE_PATH.iterdir():
+            if item.is_file():
+                try:
+                    item.unlink()
+                    typer.echo(f"删除角色文件 {item} 成功")
+                except OSError:
+                    typer.echo(f"删除角色文件 {item} 失败")
+        typer.echo(f"删除所有角色文件成功")
+        raise typer.Exit
+    if del_chat:
+        ChatSession.invalidate(del_chat)
+    if del_chat_a:
+        typer.confirm(
+            f'确定删除所有Chat文件吗？',
+            abort=True,
+        )
+        for item in CHAT_CACHE_PATH.iterdir():
+            if item.is_file():
+                try:
+                    item.unlink()
+                    typer.echo(f"删除Chat文件 {item} 成功")
+                except OSError:
+                    typer.echo(f"删除Chat文件 {item} 失败")
+        typer.echo(f"删除所有Chat文件成功")
+        raise typer.Exit
 
     if show_chat:
         ChatHandler.show_messages(show_chat, md)
@@ -210,8 +290,14 @@ def main(
     if editor and stdin_passed:
         raise BadArgumentUsage("--editor option cannot be used with stdin input.")
 
-    if editor:
+    if editor and provide:
+        prompt = open_provider(provide)
+
+    elif editor:
         prompt = get_edited_prompt()
+
+    elif provide:
+        prompt = extract_provider(provide)
 
     role_class = (
         DefaultRoles.check_get(shell, describe_shell, code)
@@ -231,7 +317,6 @@ def main(
             caching=cache,
             functions=function_schemas,
         )
-
     if chat:
         full_completion = ChatHandler(chat, role_class, md).handle(
             prompt=prompt,

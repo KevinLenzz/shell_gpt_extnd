@@ -16,6 +16,7 @@ from sgpt.handlers.default_handler import DefaultHandler
 from sgpt.handlers.repl_handler import ReplHandler
 from sgpt.llm_functions.init_functions import install_functions as inst_funcs
 from sgpt.role import DefaultRoles, SystemRole
+from sgpt.batch import BatchProcessor, process_batch_questions
 from sgpt.utils import (
     get_edited_prompt,
     get_sgpt_version,
@@ -210,6 +211,34 @@ def main(
         help="删除所有Chat",
         rich_help_panel="Chat选项",
     ),
+    batch: str = typer.Option(
+        None,
+        "--batch",
+        "-b",
+        help="批量处理模式，从文件读取多个问题（支持TXT/JSON/CSV）\n结果会自动保存到同目录",
+        rich_help_panel="批量选项",
+    ),
+    batch_output: str = typer.Option(
+        None,
+        "--batch-output",
+        "-bo",
+        help="批量处理结果输出文件路径",
+        rich_help_panel="批量选项",
+    ),
+    batch_format: str = typer.Option(
+        "txt",
+        "--batch-format",
+        "-bf",
+        help="批量处理结果输出格式（txt/json/md）",
+        rich_help_panel="批量选项",
+    ),
+    batch_no_print: bool = typer.Option(
+False,
+        "--batch-no-print",
+        "-bnp",
+        help="结果不保存到文件",
+        rich_help_panel="批量选项",
+    ),
 ) -> None:
     stdin_passed = not sys.stdin.isatty()
 
@@ -275,6 +304,72 @@ def main(
                     typer.echo(f"删除Chat文件 {item} 失败")
         typer.echo(f"删除所有Chat文件成功")
         raise typer.Exit
+
+    if show_chat:
+        ChatHandler.show_messages(show_chat, md)
+
+    # 批量处理模式
+    if batch:
+        from pathlib import Path
+        from rich.console import Console
+
+        console = Console()
+
+        # 检查文件是否存在
+        batch_file = Path(batch)
+        if not batch_file.exists():
+            raise BadArgumentUsage(f"批量处理文件不存在: {batch}")
+
+        # 检查是否与其他模式冲突
+        if chat or repl:
+            raise BadArgumentUsage("--batch 不能与 --chat 或 --repl 一起使用")
+
+        console.print(f"[cyan]📂 读取批量问题文件: {batch_file}[/cyan]")
+
+        try:
+            # 读取问题
+            processor = BatchProcessor(Path(batch_output) if batch_output else None)
+            questions = processor.read_questions_from_file(batch_file)
+
+            console.print(f"[green]✓ 成功读取 {len(questions)} 个问题[/green]\n")
+
+            # 确定使用的角色
+            role_class = (
+                DefaultRoles.check_get(shell, describe_shell, code)
+                if not role
+                else SystemRole.get(role)
+            )
+
+            # 创建处理器
+            handler = DefaultHandler(role_class, md)
+
+            # 批量处理
+            processor = process_batch_questions(
+                questions=questions,
+                handler=handler,
+                show_progress=not (code or shell),
+                model=model,
+                temperature=temperature,
+                top_p=top_p,
+                caching=cache,
+                functions=(get_openai_schemas() or None) if functions else None,
+                output=Path(batch_output) if batch_output else None
+            )
+            if batch_no_print:
+                console.print(f"\n[bold yellow]结果已舍弃[/bold yellow]")
+            else:
+                # 保存结果
+                output_file = processor.save_results(batch_format)
+
+                # 打印摘要
+                processor.print_summary()
+                console.print(f"\n[bold green]✓ 结果已保存到: {output_file}[/bold green]")
+
+        except Exception as e:
+            console.print(f"[bold red]✗ 批量处理失败: {e}[/bold red]")
+            raise typer.Exit(1)
+
+        raise typer.Exit()
 
     if show_chat:
         ChatHandler.show_messages(show_chat, md)

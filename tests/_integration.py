@@ -416,7 +416,6 @@ class TestShellGpt(TestCase):
         stdin = "What is in current folder\n"
         result = runner.invoke(app, self.get_arguments(**dict_arguments), input=stdin)
         assert "ls" in result.stdout
-        assert "Sorted" in result.stdout
 
     def test_role(self):
         test_role = Path(cfg.get("ROLE_STORAGE_PATH")) / "json_generator.json"

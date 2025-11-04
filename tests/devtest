@@ -1,6 +1,6 @@
 #!/bin/sh
-python -m pytest _integration.py -v -s
-python -m pytest test_code.py -v -s
-python -m pytest test_default.py -v -s
-python -m pytest test_roles.py -v -s
-python -m pytest test_shell.py -v -s
+python -m pytest _integration.py
+python -m pytest test_code.py
+python -m pytest test_default.py
+python -m pytest test_roles.py
+python -m pytest test_shell.py

@@ -15,7 +15,7 @@ from pygments.lexers import shell
 from .config import cfg
 from .utils import option_callback
 
-SHELL_ROLE = f"""仅提供适用于{os.name}的{shell}命令，不附带任何说明。
+SHELL_ROLE = f"""仅提供适用于{platform.system()}的{shell}命令，不附带任何说明。
 如果缺乏详细信息，请提供最合理的解决方案。
 确保输出的是有效的shell命令。
 如果需要执行多个步骤，尝试使用&&将它们组合在一起。
@@ -36,7 +36,7 @@ CODE_ROLE = """只提供代码作为输出，不提供任何描述。
 例如，如果提示是“Hello world Python”，则应返回“print('Hello world')”。"""
 
 DEFAULT_ROLE = f"""你是编程和系统管理助理。
-您正在使用{shell}shell管理{os.name}操作系统。
+您正在使用{shell}shell管理{platform.system()}操作系统。
 除非有人特别要求你提供更多细节，否则请提供约100字的简短回复。
 如果你需要存储任何数据，认定它将存储在对话中。
 如果可能，请应用MARKDOWN格式。(APPLY MARKDOWN)"""

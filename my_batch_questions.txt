@@ -1,0 +1,8 @@
+# 示例批量问题文件
+# 每行一个问题，支持注释（以 # 开头）
+什么是Python装饰器？
+什么是闭包（closure）？
+在Windows PowerShell中如何递归列出所有py文件并显示行数？
+请给出一个简洁的快速排序（quicksort）Python实现（含注释）。
+为一个简单的登录函数生成pytest测试用例示例。
+

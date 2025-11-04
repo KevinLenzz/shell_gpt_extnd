@@ -289,7 +289,15 @@ False,
         typer.echo(f"删除所有角色文件成功")
         raise typer.Exit
     if del_chat:
-        ChatSession.invalidate(del_chat)
+        item=CHAT_CACHE_PATH/del_chat
+        if item.is_file():
+            try:
+                item.unlink()
+                typer.echo(f"删除Chat文件 {item} 成功")
+            except OSError:
+                typer.echo(f"删除Chat文件 {item} 失败")
+        else:
+            typer.echo(f"Chat文件 {item} 不存在")
     if del_chat_a:
         typer.confirm(
             f'确定删除所有Chat文件吗？',

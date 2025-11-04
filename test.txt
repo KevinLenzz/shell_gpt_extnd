@@ -1,3 +1,4 @@
+用中文回答
 rust helloworld
 go helloworld
 kotlin helloworld
